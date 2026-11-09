@@ -1,0 +1,34 @@
+# Build metadata for the standalone tickwork distribution: the release
+# pipeline stages this beside a copy of the tickwork/ package. The tree must
+# stay instance-neutral (the boundary lint scans .toml files here with the
+# same forbidden names as the package itself).
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tickwork"
+version = "0.3.0"
+description = "A generic, instance-neutral workflow engine: states, transitions, sweeps and call replay over a queue of work items"
+requires-python = ">=3.11"
+dependencies = [
+    "PyYAML>=6.0",
+]
+license = { text = "MIT" }
+
+[project.scripts]
+tickwork = "tickwork.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["tickwork*"]
+
+# The README documents the example files as installed side data: they are
+# not part of the tickwork package, so data-files is the only way they reach
+# the wheel/sdist. The install destination stays instance-neutral
+# (share/tickwork/examples under sys.prefix).
+[tool.setuptools.data-files]
+"share/tickwork/examples" = [
+    "examples/pr-loop.states.yaml",
+    "examples/items.jsonl",
+    "examples/logins.yaml",
+]

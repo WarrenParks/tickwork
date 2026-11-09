@@ -1,0 +1,4 @@
+# Ship the example files in the sdist too; setuptools pulls in package
+# sources by default, but the top-level examples/ directory is data-files
+# content and only reaches the sdist via MANIFEST.in.
+recursive-include examples *

@@ -1,0 +1,7 @@
+# Role name → login. The logins are made up for the example; substitute your
+# own. `human` is needed because the states file's override predicates name it.
+dev: dee
+reviewer: ria
+planner: pip
+verifier: val
+human: hum

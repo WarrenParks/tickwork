@@ -1,0 +1,81 @@
+# The PR loop's states as data: the exactly-one-owner state machine the
+# tickwork workflow engine drives, one entry per state.
+# Load via tickwork.workflow_states.load(); nothing in the loop evaluates
+# these predicates yet (the engine ships them before the loop consumes them).
+#
+# Each state: a predicate over artifacts → (owner, board bucket).
+# `override: true` states are cross-cutting (closed / held by the human /
+# unassigned intake / blocked) and win in listed order. All other predicates
+# must stay disjoint:
+# an item matching zero or 2+ of them is an anomaly, reported by
+# tickwork.workflow_states.check(): nothing in the loop evaluates these
+# predicates yet (the engine ships them before the loop consumes them).
+#
+# Roles are role names (dev, reviewer, planner, verifier) and `human`;
+# the caller maps roles to logins. Never a persona login here.
+
+workflow: pr-loop
+version: 1
+states:
+  done:
+    override: true
+    when: { issue.state: closed }
+    board: done
+    terminal: true
+
+  waiting_on_human:
+    override: true
+    # a merged PR leaves this state even while still assigned to the human,
+    # so a human merge hands off to `verifying` like an automated one
+    when: { any: [ { issue.assignee: human }, { pr.assignee: human, pr.state: open } ] }
+    board: waiting_on_human
+    owner: human
+
+  intake:
+    # the board buckets unassigned open issues here even when they have open
+    # dependencies, so this must win over `blocked`
+    override: true
+    when: { issue.state: open, issue.assignee: none, pr: none }
+    board: intake
+    owner: human               # visibility only; a human or the planner picks it up
+
+  blocked:
+    override: true
+    when: { issue.dependencies: open, not: { issue.assignee: human } }
+    board: blocked
+    owner: human               # unblocking is a manual step; entry assigns the human
+
+  triage:
+    when: { issue.assignee: planner, pr: none }
+    board: queued
+    owner: planner
+
+  ready_for_dev:
+    when: { issue.assignee: dev, pr: none }
+    board: queued
+    owner: dev
+
+  in_review:
+    when: { pr.state: open, pr.requested_reviewers: reviewer, pr.reviewed_on_head: false }
+    board: in_progress
+    owner: reviewer
+
+  revising:
+    when: { pr.state: open, pr.assignee: dev }
+    board: in_progress
+    owner: dev
+
+  merging:
+    when: { pr.state: open, pr.requested_reviewers: reviewer, pr.approved_on_head: true }
+    board: in_progress
+    owner: reviewer
+
+  decomposing:
+    when: { pr.state: open, pr.assignee: planner }
+    board: in_progress
+    owner: planner
+
+  verifying:
+    when: { issue.state: open, pr.state: merged }   # whoever merged
+    board: in_progress
+    owner: verifier

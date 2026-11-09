@@ -1,0 +1,3 @@
+{"repo": "example/widget", "issue": {"number": 101, "state": "open", "assignees": ["dee"], "open_dependencies": []}, "pr": null}
+{"repo": "example/widget", "issue": {"number": 102, "state": "open", "assignees": ["dee"], "open_dependencies": []}, "pr": {"number": 202, "state": "open", "assignees": [], "requested_reviewers": [], "reviewed_on_head": false, "approved_on_head": false}}
+{"repo": "example/widget", "issue": {"number": 103, "state": "open", "assignees": ["dee"], "open_dependencies": []}, "pr": {"number": 203, "state": "open", "assignees": [], "requested_reviewers": ["ria"], "reviewed_on_head": false, "approved_on_head": true}}
